@@ -35,7 +35,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = repo.findByEmail(request.getEmail())
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!encoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
