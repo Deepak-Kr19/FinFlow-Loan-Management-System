@@ -2,26 +2,56 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: api-gateway
+
   cloud:
     gateway:
       routes:
 
+        # =========================
+        # AUTH SERVICE
+        # =========================
         - id: auth-service
           uri: http://localhost:8081
           predicates:
             - Path=/gateway/auth/**
+          filters:
+            - StripPrefix=1
 
+        # =========================
+        # APPLICATION SERVICE
+        # =========================
         - id: application-service
           uri: http://localhost:8082
           predicates:
             - Path=/gateway/applications/**
+          filters:
+            - StripPrefix=1
 
+        # =========================
+        # DOCUMENT SERVICE (future)
+        # =========================
         - id: document-service
           uri: http://localhost:8083
           predicates:
             - Path=/gateway/documents/**
+          filters:
+            - StripPrefix=1
 
+        # =========================
+        # ADMIN SERVICE (future)
+        # =========================
         - id: admin-service
           uri: http://localhost:8084
           predicates:
             - Path=/gateway/admin/**
+          filters:
+            - StripPrefix=1
+
+
+# ===============================
+# JWT CONFIG (MUST MATCH AUTH SERVICE)
+# ===============================
+jwt:
+  secret: finflowsecretkeyfinflowsecretkey

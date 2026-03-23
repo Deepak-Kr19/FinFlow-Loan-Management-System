@@ -24,9 +24,4 @@ public class AuthController {
     public AuthResponse login(@RequestBody LoginRequest request) {
         return service.login(request);
     }
-
-    @GetMapping("/test")
-    public String test() {
-        return "Protected API working!";
-    }
 }

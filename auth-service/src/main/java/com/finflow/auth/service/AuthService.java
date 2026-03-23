@@ -22,6 +22,7 @@ public class AuthService {
     }
 
     public String signup(SignupRequest request) {
+
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
@@ -34,6 +35,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+
         User user = repo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -42,6 +44,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
+
         return new AuthResponse(token);
     }
 }

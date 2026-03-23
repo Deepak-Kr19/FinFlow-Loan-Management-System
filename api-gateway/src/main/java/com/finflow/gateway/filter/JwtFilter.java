@@ -20,8 +20,8 @@ public class JwtFilter implements GlobalFilter {
 
         String path = exchange.getRequest().getURI().getPath();
 
-        // Allow login & signup
-        if (path.contains("/auth/login") || path.contains("/auth/signup")) {
+        // ✅ Allow auth APIs
+        if (path.startsWith("/gateway/auth")) {
             return chain.filter(exchange);
         }
 
@@ -29,7 +29,6 @@ public class JwtFilter implements GlobalFilter {
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
-        // Check header
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
@@ -37,7 +36,6 @@ public class JwtFilter implements GlobalFilter {
 
         String token = authHeader.substring(7);
 
-        // Validate token
         if (!jwtUtil.validateToken(token)) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
