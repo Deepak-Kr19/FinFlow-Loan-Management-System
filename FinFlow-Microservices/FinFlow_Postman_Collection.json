@@ -1,15 +1,15 @@
 {
   "info": {
-    "name": "FinFlow Loan Management API",
-    "description": "API collection for the FinFlow Microservices project",
+    "name": "FinFlow — Loan Management System",
+    "description": "Complete API collection for FinFlow Microservices. Run requests in order: Signup → Login → Create Application → Submit → Upload Document → Admin Login → Admin Operations.\n\nSetup: Create a Postman Environment with variable 'jwt_token' (empty value). The Login request auto-saves the token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Auth Service",
+      "name": "🔐 Auth Service",
       "item": [
         {
-          "name": "Signup",
+          "name": "1. Signup — Register Applicant",
           "request": {
             "method": "POST",
             "header": [
@@ -17,20 +17,50 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ROLE_APPLICANT\"\n}"
+              "raw": "{\n  \"name\": \"Deepak Kumar\",\n  \"email\": \"deepak@capg.com\",\n  \"password\": \"Deepak@123\",\n  \"role\": \"ROLE_APPLICANT\"\n}"
             },
-            "url": {"raw": "http://localhost:8080/auth/signup", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "signup"]}
+            "url": {
+              "raw": "http://localhost:8080/auth/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["auth", "signup"]
+            }
           }
         },
         {
-          "name": "Login",
+          "name": "2. Signup — Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@capg.com\",\n  \"password\": \"Admin@123\",\n  \"role\": \"ROLE_ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/signup",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "3. Login — Applicant",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "var jsonData = pm.response.json();",
-                  "if (jsonData.token) { pm.environment.set(\"jwt_token\", jsonData.token); }"
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.environment.set('applicant_token', jsonData.token);",
+                  "    console.log('✅ Applicant JWT saved!');",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -38,53 +68,361 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"deepak@capg.com\",\n  \"password\": \"Deepak@123\"\n}"
             },
-            "url": {"raw": "http://localhost:8080/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "login"]}
+            "url": {
+              "raw": "http://localhost:8080/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "4. Login — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    pm.environment.set('admin_token', jsonData.token);",
+                  "    console.log('✅ Admin JWT saved!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@capg.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["auth", "login"]
+            }
           }
         }
       ]
     },
     {
-      "name": "2. Application Service",
+      "name": "📋 Application Service",
       "item": [
         {
-          "name": "Create Application",
+          "name": "5. Create Loan Application",
           "request": {
             "method": "POST",
             "header": [
               {"key": "Content-Type", "value": "application/json"},
-              {"key": "Authorization", "value": "Bearer {{jwt_token}}"}
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"personalDetails\": \"{\\\"age\\\": 30, \\\"address\\\": \\\"123 Main St\\\"}\",\n  \"employmentDetails\": \"{\\\"company\\\": \\\"Tech Corp\\\", \\\"salary\\\": 80000}\",\n  \"loanDetails\": \"{\\\"amount\\\": 50000, \\\"tenure\\\": 5}\"\n}"
+              "raw": "{\n  \"personalDetails\": \"Deepak Kumar, Age 28, Mumbai, Maharashtra, PAN: ABCDE1234F, Aadhaar: 1234-5678-9012\",\n  \"employmentDetails\": \"Software Engineer at Capgemini, 5 years experience, Annual CTC: Rs.12,00,000\",\n  \"loanDetails\": \"Home Loan, Amount: Rs.50,00,000, Tenure: 20 years, Interest Rate: 8.5%\"\n}"
             },
-            "url": {"raw": "http://localhost:8080/applications", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["applications"]}
+            "url": {
+              "raw": "http://localhost:8080/applications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["applications"]
+            }
           }
         },
         {
-          "name": "Get My Applications",
+          "name": "6. Get My Applications",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{jwt_token}}"}],
-            "url": {"raw": "http://localhost:8080/applications/my", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["applications", "my"]}
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/applications/my",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["applications", "my"]
+            }
+          }
+        },
+        {
+          "name": "7. Update Application (Draft)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personalDetails\": \"Deepak Kumar, Age 28, Mumbai, Maharashtra, PAN: ABCDE1234F, Aadhaar: 1234-5678-9012\",\n  \"employmentDetails\": \"Senior Software Engineer at Capgemini, 6 years experience, Annual CTC: Rs.18,00,000\",\n  \"loanDetails\": \"Home Loan, Amount: Rs.65,00,000, Tenure: 25 years, Interest Rate: 8.25%\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/applications/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["applications", "1"]
+            }
+          }
+        },
+        {
+          "name": "8. Submit Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/applications/1/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["applications", "1", "submit"]
+            }
+          }
+        },
+        {
+          "name": "9. Check Application Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/applications/1/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["applications", "1", "status"]
+            }
           }
         }
       ]
     },
     {
-      "name": "3. Admin Service",
+      "name": "📎 Document Service",
       "item": [
         {
-          "name": "Get All Applications",
+          "name": "10. Upload Document (Aadhaar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "applicationId", "value": "1", "type": "text"},
+                {"key": "type", "value": "AADHAAR", "type": "text"},
+                {"key": "file", "type": "file", "src": ""}
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/documents/upload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["documents", "upload"]
+            }
+          }
+        },
+        {
+          "name": "11. Upload Document (PAN Card)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "applicationId", "value": "1", "type": "text"},
+                {"key": "type", "value": "PAN_CARD", "type": "text"},
+                {"key": "file", "type": "file", "src": ""}
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/documents/upload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["documents", "upload"]
+            }
+          }
+        },
+        {
+          "name": "12. Upload Document (Salary Slip)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{applicant_token}}"}
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {"key": "applicationId", "value": "1", "type": "text"},
+                {"key": "type", "value": "SALARY_SLIP", "type": "text"},
+                {"key": "file", "type": "file", "src": ""}
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8080/documents/upload",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["documents", "upload"]
+            }
+          }
+        },
+        {
+          "name": "13. Verify Document — Approve",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/documents/1/verify?status=VERIFIED",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["documents", "1", "verify"],
+              "query": [
+                {"key": "status", "value": "VERIFIED"}
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔑 Admin Service",
+      "item": [
+        {
+          "name": "14. Get All Applications (Admin)",
           "request": {
             "method": "GET",
-            "header": [{"key": "Authorization", "value": "Bearer {{jwt_token}}"}],
-            "url": {"raw": "http://localhost:8080/admin/applications", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["admin", "applications"]}
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/admin/applications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "applications"]
+            }
+          }
+        },
+        {
+          "name": "15. Approve Application (Decision)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/admin/applications/1/decision?decision=APPROVED&remarks=All documents verified. Loan sanctioned.",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "applications", "1", "decision"],
+              "query": [
+                {"key": "decision", "value": "APPROVED"},
+                {"key": "remarks", "value": "All documents verified. Loan sanctioned."}
+              ]
+            }
+          }
+        },
+        {
+          "name": "16. Reject Application (Decision)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/admin/applications/1/decision?decision=REJECTED&remarks=Insufficient income proof.",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "applications", "1", "decision"],
+              "query": [
+                {"key": "decision", "value": "REJECTED"},
+                {"key": "remarks", "value": "Insufficient income proof."}
+              ]
+            }
+          }
+        },
+        {
+          "name": "17. Get All Reports",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/admin/reports",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "reports"]
+            }
+          }
+        },
+        {
+          "name": "18. Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "url": {
+              "raw": "http://localhost:8080/admin/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "19. Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Deepak Kumar (Updated)\",\n  \"role\": \"ROLE_ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/admin/users/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["admin", "users", "1"]
+            }
           }
         }
       ]
