@@ -1,0 +1,22 @@
+# Build
+**/target/
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+
+# Optional scripts
+add-eureka
+refactor

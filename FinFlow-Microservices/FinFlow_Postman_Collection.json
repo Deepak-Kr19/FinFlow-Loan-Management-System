@@ -1,0 +1,93 @@
+{
+  "info": {
+    "name": "FinFlow Loan Management API",
+    "description": "API collection for the FinFlow Microservices project",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Auth Service",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"ROLE_APPLICANT\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/auth/signup", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "signup"]}
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) { pm.environment.set(\"jwt_token\", jsonData.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/auth/login", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["auth", "login"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Application Service",
+      "item": [
+        {
+          "name": "Create Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{jwt_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personalDetails\": \"{\\\"age\\\": 30, \\\"address\\\": \\\"123 Main St\\\"}\",\n  \"employmentDetails\": \"{\\\"company\\\": \\\"Tech Corp\\\", \\\"salary\\\": 80000}\",\n  \"loanDetails\": \"{\\\"amount\\\": 50000, \\\"tenure\\\": 5}\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/applications", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["applications"]}
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{jwt_token}}"}],
+            "url": {"raw": "http://localhost:8080/applications/my", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["applications", "my"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin Service",
+      "item": [
+        {
+          "name": "Get All Applications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{jwt_token}}"}],
+            "url": {"raw": "http://localhost:8080/admin/applications", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["admin", "applications"]}
+          }
+        }
+      ]
+    }
+  ]
+}
