@@ -50,6 +50,8 @@ services:
   auth-service:
     build: ./auth-service
     container_name: auth-service
+    ports:
+      - "8081:8081"
     environment:
       - DB_URL=jdbc:mysql://mysql-db:3306/finflow_auth?createDatabaseIfNotExist=true
       - DB_USER=root
@@ -67,6 +69,8 @@ services:
   application-service:
     build: ./application-service
     container_name: application-service
+    ports:
+      - "8082:8082"
     environment:
       - DB_URL=jdbc:mysql://mysql-db:3306/finflow_app?createDatabaseIfNotExist=true
       - DB_USER=root
@@ -84,6 +88,8 @@ services:
   document-service:
     build: ./document-service
     container_name: document-service
+    ports:
+      - "8083:8083"
     environment:
       - DB_URL=jdbc:mysql://mysql-db:3306/finflow_doc?createDatabaseIfNotExist=true
       - DB_USER=root
@@ -101,6 +107,8 @@ services:
   admin-service:
     build: ./admin-service
     container_name: admin-service
+    ports:
+      - "8084:8084"
     environment:
       - DB_URL=jdbc:mysql://mysql-db:3306/finflow_admin?createDatabaseIfNotExist=true
       - DB_USER=root
