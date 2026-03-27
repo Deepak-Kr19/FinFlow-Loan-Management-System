@@ -9,6 +9,8 @@ import com.capg.authservice.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthService {
 
@@ -43,5 +45,19 @@ public class AuthService {
         }
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
         return new AuthResponse(token, user.getRole());
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public String updateUser(Long id, RegisterRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (request.getName() != null) user.setName(request.getName());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getRole() != null) user.setRole(request.getRole());
+        userRepository.save(user);
+        return "User updated successfully";
     }
 }

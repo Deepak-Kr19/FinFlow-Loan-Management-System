@@ -2,6 +2,8 @@ package com.capg.adminservice.service;
 
 import com.capg.adminservice.entity.Decision;
 import com.capg.adminservice.entity.Report;
+import com.capg.adminservice.event.DecisionEvent;
+import com.capg.adminservice.event.DecisionEventProducer;
 import com.capg.adminservice.repository.DecisionRepository;
 import com.capg.adminservice.repository.ReportRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +19,14 @@ public class AdminService {
     private final DecisionRepository decisionRepository;
     private final ReportRepository reportRepository;
     private final RestTemplate restTemplate;
+    private final DecisionEventProducer eventProducer;
 
-    public AdminService(DecisionRepository decisionRepository, ReportRepository reportRepository, RestTemplate restTemplate) {
+    public AdminService(DecisionRepository decisionRepository, ReportRepository reportRepository,
+                        RestTemplate restTemplate, DecisionEventProducer eventProducer) {
         this.decisionRepository = decisionRepository;
         this.reportRepository = reportRepository;
         this.restTemplate = restTemplate;
+        this.eventProducer = eventProducer;
     }
 
     @Value("${services.application-service}")
@@ -44,7 +49,13 @@ public class AdminService {
         decision.setApplicationId(applicationId);
         decision.setDecision(decisionStr);
         decision.setRemarks(remarks);
-        return decisionRepository.save(decision);
+        Decision saved = decisionRepository.save(decision);
+
+        // Publish event to RabbitMQ
+        DecisionEvent event = new DecisionEvent(applicationId, decisionStr, remarks);
+        eventProducer.publishDecisionMade(event);
+
+        return saved;
     }
 
     public List<Report> getReports() {
@@ -69,3 +80,4 @@ public class AdminService {
         }
     }
 }
+

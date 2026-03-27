@@ -53,4 +53,9 @@ public class LoanApplicationController {
             @RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(service.getStatus(id, userId));
     }
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<LoanApplication>> getAllApplications() {
+        return ResponseEntity.ok(service.getAllApplications());
+    }
 }

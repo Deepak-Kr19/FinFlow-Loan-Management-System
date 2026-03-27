@@ -17,6 +17,24 @@ services:
     networks:
       - finflow-network
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - finflow-network
+
   eureka-server:
     build: ./eureka-server
     container_name: eureka-server
@@ -76,11 +94,14 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       mysql-db:
         condition: service_healthy
       eureka-server:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - finflow-network
@@ -95,11 +116,14 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       mysql-db:
         condition: service_healthy
       eureka-server:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - finflow-network
@@ -116,11 +140,14 @@ services:
       - SERVICES_APPLICATION_SERVICE=http://application-service:8082
       - SERVICES_AUTH_SERVICE=http://auth-service:8081
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       mysql-db:
         condition: service_healthy
       eureka-server:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
     networks:
       - finflow-network

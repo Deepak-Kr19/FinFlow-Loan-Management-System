@@ -1,6 +1,8 @@
 package com.capg.documentservice.service;
 
 import com.capg.documentservice.entity.Document;
+import com.capg.documentservice.event.DocumentEvent;
+import com.capg.documentservice.event.DocumentEventProducer;
 import com.capg.documentservice.repository.DocumentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,11 @@ import java.util.UUID;
 public class DocumentService {
 
     private final DocumentRepository repository;
+    private final DocumentEventProducer eventProducer;
 
-    public DocumentService(DocumentRepository repository) {
+    public DocumentService(DocumentRepository repository, DocumentEventProducer eventProducer) {
         this.repository = repository;
+        this.eventProducer = eventProducer;
     }
 
     @Value("${document.upload-dir:uploads/}")
@@ -41,7 +45,13 @@ public class DocumentService {
         doc.setFilePath(filePath.toString());
         doc.setStatus("PENDING");
 
-        return repository.save(doc);
+        Document saved = repository.save(doc);
+
+        // Publish event to RabbitMQ
+        DocumentEvent event = new DocumentEvent(saved.getId(), applicationId, type, "PENDING");
+        eventProducer.publishDocumentUploaded(event);
+
+        return saved;
     }
 
     public Document verifyDocument(Long documentId, String status) {
