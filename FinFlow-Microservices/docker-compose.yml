@@ -35,6 +35,14 @@ services:
     networks:
       - finflow-network
 
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - finflow-network
+
   eureka-server:
     build: ./eureka-server
     container_name: eureka-server
@@ -50,8 +58,11 @@ services:
       - "8080:8080"
     environment:
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       eureka-server:
+        condition: service_started
+      zipkin:
         condition: service_started
       auth-service:
         condition: service_started
@@ -75,6 +86,7 @@ services:
       - DB_USER=root
       - DB_PASSWORD=password
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -95,6 +107,7 @@ services:
       - DB_PASSWORD=password
       - EUREKA_URL=http://eureka-server:8761/eureka/
       - RABBITMQ_HOST=rabbitmq
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -117,6 +130,7 @@ services:
       - DB_PASSWORD=password
       - EUREKA_URL=http://eureka-server:8761/eureka/
       - RABBITMQ_HOST=rabbitmq
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       mysql-db:
         condition: service_healthy
@@ -141,6 +155,7 @@ services:
       - SERVICES_AUTH_SERVICE=http://auth-service:8081
       - EUREKA_URL=http://eureka-server:8761/eureka/
       - RABBITMQ_HOST=rabbitmq
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       mysql-db:
         condition: service_healthy
