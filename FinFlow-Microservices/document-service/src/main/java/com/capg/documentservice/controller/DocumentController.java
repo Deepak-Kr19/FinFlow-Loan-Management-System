@@ -8,6 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * REST controller for document management endpoints.
+ * Base path: /documents
+ *
+ * Endpoints:
+ * - POST /documents/upload      → Upload a document for a loan application
+ * - PUT  /documents/{id}/verify → Verify or reject a document (admin)
+ */
 @RestController
 @RequestMapping("/documents")
 public class DocumentController {
@@ -19,6 +27,7 @@ public class DocumentController {
         this.service = service;
     }
 
+    /** Upload a document file for a specific loan application */
     @PostMapping("/upload")
     public ResponseEntity<Document> uploadDocument(
             @RequestParam("applicationId") Long applicationId,
@@ -33,6 +42,7 @@ public class DocumentController {
         }
     }
 
+    /** Admin endpoint: verify or reject a document by ID */
     @PutMapping("/{id}/verify")
     public ResponseEntity<Document> verifyDocument(
             @PathVariable Long id,

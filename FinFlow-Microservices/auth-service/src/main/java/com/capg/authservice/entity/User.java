@@ -2,23 +2,36 @@ package com.capg.authservice.entity;
 
 import jakarta.persistence.*;
 
+/**
+ * JPA Entity representing a user in the FinFlow system.
+ * Mapped to the "users" table in the finflow_auth database.
+ * Stores user credentials and role information for authentication.
+ */
 @Entity
 @Table(name = "users")
 public class User {
+
+    /** Auto-generated primary key */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Full name of the user */
     private String name;
 
+    /** Unique email used as the login identifier */
     @Column(unique = true)
     private String email;
 
+    /** BCrypt-hashed password (never stored in plain text) */
     private String password;
+
+    /** User role: ROLE_APPLICANT or ROLE_ADMIN */
     private String role; 
 
     public User() {}
 
+    // --- Getters and Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }

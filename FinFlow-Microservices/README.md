@@ -1,287 +1,240 @@
 # 🏦 FinFlow — Loan Management System
 
-> A production-ready **Microservices Architecture** built with **Java 17**, **Spring Boot 3.4**, **Spring Cloud Gateway**, **Netflix Eureka**, **JWT Authentication**, **MySQL**, and **Docker**.
+> A production-ready microservices-based loan management system built with **Spring Boot 3.4**, **Spring Cloud 2024**, **RabbitMQ**, **Zipkin**, and **Docker**.
+
+![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen?style=flat-square&logo=springboot)
+![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2024.0.0-blue?style=flat-square)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3-orange?style=flat-square&logo=rabbitmq)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker)
 
 ---
 
-## 📐 Architecture Overview
+## 📋 Table of Contents
+
+- [Architecture](#-architecture)
+- [Services](#-services)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [API Endpoints](#-api-endpoints)
+- [Messaging (RabbitMQ)](#-messaging-rabbitmq)
+- [Distributed Tracing (Zipkin)](#-distributed-tracing-zipkin)
+- [Testing](#-testing)
+- [Project Structure](#-project-structure)
+
+---
+
+## 🏗 Architecture
 
 ```
-                          ┌─────────────────────────┐
-                          │     Eureka Server        │
-                          │       (Port 8761)        │
-                          └────────────┬────────────┘
-                                       │ Service Discovery
-                                       │
-┌──────────┐              ┌────────────▼────────────┐
-│  Client   │──── REST ──▶│      API Gateway         │
-│ (Postman) │              │       (Port 8080)        │
-└──────────┘              │  JWT Filter + Routing    │
-                          └────┬───┬───┬───┬────────┘
-                               │   │   │   │
-              ┌────────────────┘   │   │   └────────────────┐
-              ▼                    ▼   ▼                    ▼
-     ┌────────────┐      ┌──────────┐ ┌──────────┐  ┌──────────┐
-     │Auth Service│      │App Svc   │ │Doc Svc   │  │Admin Svc │
-     │ (8081)     │      │ (8082)   │ │ (8083)   │  │ (8084)   │
-     └──────┬─────┘      └────┬─────┘ └────┬─────┘  └────┬─────┘
-            │                 │             │              │
-            └────────────┬────┴─────────────┴──────────────┘
-                         ▼
-                ┌────────────────┐
-                │   MySQL 8.0    │
-                │  (Port 3306)   │
-                │  4 Databases   │
-                └────────────────┘
+                              ┌──────────────────┐
+                              │   Zipkin (:9411)  │
+                              └──────▲───────────┘
+                                     │ traces
+┌─────────┐    ┌──────────────┐    ┌─┴──────────┐    ┌───────────┐
+│  Client  │───▶│ API Gateway  │───▶│   Eureka   │    │  RabbitMQ │
+│          │    │   (:8080)    │    │  (:8761)   │    │  (:5672)  │
+└─────────┘    └──────┬───────┘    └────────────┘    └─────┬─────┘
+                      │                                     │
+         ┌────────────┼────────────────┐                    │
+         │            │                │                    │
+   ┌─────▼─────┐ ┌───▼──────┐  ┌─────▼─────┐  ┌──────────▼──┐
+   │   Auth    │ │Application│  │ Document  │  │   Admin     │
+   │  Service  │ │  Service  │  │  Service  │  │   Service   │
+   │  (:8081)  │ │  (:8082)  │  │  (:8083)  │  │   (:8084)   │
+   └─────┬─────┘ └────┬──────┘  └─────┬─────┘  └──────┬──────┘
+         │            │                │               │
+         └────────────┴────────────────┴───────────────┘
+                              │
+                      ┌───────▼───────┐
+                      │   MySQL 8.0   │
+                      │   (:3306)     │
+                      └───────────────┘
 ```
 
 ---
 
-## 🧩 Microservices Breakdown
+## 🔧 Services
 
 | Service | Port | Description |
 |---------|------|-------------|
-| **Eureka Server** | `8761` | Service Discovery & Registration Dashboard |
-| **API Gateway** | `8080` | Central entry point — JWT validation, routing, header injection |
-| **Auth Service** | `8081` | User registration, login, JWT token generation |
-| **Application Service** | `8082` | Loan application CRUD, submission workflow |
-| **Document Service** | `8083` | File upload, document verification |
-| **Admin Service** | `8084` | Admin dashboard — view all applications, approve/reject, manage users |
+| **[Eureka Server](./eureka-server/)** | 8761 | Service discovery and registration |
+| **[API Gateway](./api-gateway/)** | 8080 | Centralized routing, JWT validation, CORS |
+| **[Auth Service](./auth-service/)** | 8081 | User registration, login, JWT token generation |
+| **[Application Service](./application-service/)** | 8082 | Loan application CRUD and lifecycle management |
+| **[Document Service](./document-service/)** | 8083 | Document upload, storage, and verification |
+| **[Admin Service](./admin-service/)** | 8084 | Application decisions, user management, reports |
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠 Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| Java 17 | Core Language |
-| Spring Boot 3.4.1 | Framework |
-| Spring Cloud Gateway | API Gateway (Reactive/Netty) |
-| Netflix Eureka | Service Discovery |
-| Spring Security + JWT | Authentication & Authorization |
-| Spring Data JPA + Hibernate | ORM & Database Access |
-| MySQL 8.0 | Relational Database |
-| Docker & Docker Compose | Containerization & Orchestration |
-| Maven | Build & Dependency Management |
+| Category | Technology |
+|----------|-----------|
+| **Language** | Java 17 |
+| **Framework** | Spring Boot 3.4.1 |
+| **Cloud** | Spring Cloud 2024.0.0 (Eureka, Gateway) |
+| **Security** | Spring Security + JWT (HMAC-SHA256) |
+| **Database** | MySQL 8.0 (JPA/Hibernate) |
+| **Messaging** | RabbitMQ 3 (Topic Exchange) |
+| **Tracing** | Zipkin + Micrometer Tracing (Brave) |
+| **Logging** | SLF4J + Logback (rolling file appender) |
+| **Docs** | SpringDoc OpenAPI 3 (Swagger UI) |
+| **Testing** | JUnit 5 + Mockito |
+| **Containerization** | Docker + Docker Compose |
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- **Docker Desktop** installed and running
-- **Postman** (for API testing)
 
-### Run the Project
+- Java 17+
+- Maven 3.8+
+- Docker & Docker Compose
+
+### Run with Docker (Recommended)
 
 ```bash
-# Clone the repository
+# Clone and start all services
 git clone <repository-url>
 cd FinFlow-Microservices
-
-# Start all services (builds + runs)
 docker-compose up --build -d
-
-# Check all containers are running
-docker-compose ps
 ```
 
-> ⏳ **First build takes ~5 minutes** (Maven downloads dependencies inside Docker).
-> MySQL initializes first via healthcheck, then all services start.
+### Access Points
 
-### Verify Services
-
-| Check | URL |
-|-------|-----|
+| Resource | URL |
+|----------|-----|
+| Swagger UI | http://localhost:8080/swagger-ui.html |
 | Eureka Dashboard | http://localhost:8761 |
-| API Gateway | http://localhost:8080 |
+| Zipkin UI | http://localhost:9411 |
+| RabbitMQ Management | http://localhost:15672 (guest/guest) |
 
-All 5 services should appear as **UP** in the Eureka Dashboard.
+### Run Locally (Without Docker)
 
-### Stop Everything
 ```bash
-docker-compose down
+# Start each service (requires local MySQL and RabbitMQ)
+cd auth-service && mvn spring-boot:run
+cd application-service && mvn spring-boot:run
+cd document-service && mvn spring-boot:run
+cd admin-service && mvn spring-boot:run
+cd api-gateway && mvn spring-boot:run
+cd eureka-server && mvn spring-boot:run
 ```
 
 ---
 
-## 🔐 Authentication Flow
+## 📡 API Endpoints
 
-```
-1. POST /auth/signup     → Register a new user
-2. POST /auth/login      → Get JWT token
-3. Use token as:         Authorization: Bearer <token>
-4. Gateway validates JWT → Injects X-User-Id & X-User-Role headers
-5. Downstream services   → Read headers for access control
-```
+### Auth Service (`/auth`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/signup` | Register a new user |
+| POST | `/auth/login` | Login and receive JWT token |
+| GET | `/auth/admin/users` | List all users (admin) |
+| PUT | `/auth/admin/users/{id}` | Update user details (admin) |
 
-**Open Endpoints** (no token required): `/auth/signup`, `/auth/login`
-**Protected Endpoints** (token required): Everything else
+### Application Service (`/applications`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/applications` | Create a loan application |
+| GET | `/applications/my` | List user's applications |
+| PUT | `/applications/{id}` | Update draft application |
+| POST | `/applications/{id}/submit` | Submit for review |
+| GET | `/applications/{id}/status` | Check application status |
+| GET | `/applications/admin/all` | List all applications (admin) |
+
+### Document Service (`/documents`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/documents/upload` | Upload a document |
+| PUT | `/documents/{id}/verify` | Verify/reject document (admin) |
+
+### Admin Service (`/admin`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/applications` | View all applications |
+| POST | `/admin/applications/{id}/decision` | Approve/reject application |
+| GET | `/admin/reports` | View reports |
+| GET | `/admin/users` | View all users |
+| PUT | `/admin/users/{id}` | Update user |
 
 ---
 
-## 📬 API Reference
+## 📨 Messaging (RabbitMQ)
 
-### Auth Service
+Uses a **Topic Exchange** (`finflow.exchange`) with three event types:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/auth/signup` | Register a new user |
-| `POST` | `/auth/login` | Login and receive JWT token |
-
-### Application Service
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/applications` | Create a new loan application |
-| `GET` | `/applications/my` | Get all my applications |
-| `PUT` | `/applications/{id}` | Update a draft application |
-| `POST` | `/applications/{id}/submit` | Submit application for review |
-| `GET` | `/applications/{id}/status` | Check application status |
-
-### Document Service
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/documents/upload` | Upload a document (multipart) |
-| `PUT` | `/documents/{id}/verify` | Verify/reject a document |
-
-### Admin Service
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/admin/applications` | View all submitted applications |
-| `POST` | `/admin/applications/{id}/decision` | Approve/reject an application |
-| `GET` | `/admin/reports` | View system reports |
-| `GET` | `/admin/users` | View all registered users |
-| `PUT` | `/admin/users/{id}` | Update user details |
-
----
-
-## 🧪 Testing with Postman
-
-1. Import `FinFlow_Postman_Collection.json` into Postman
-2. Create a Postman **Environment** and add a variable `jwt_token` (leave value empty)
-3. Run requests in order — the Login request auto-saves the token!
-
-### Sample Flow
-
-**Step 1 — Signup:**
-```json
-POST http://localhost:8080/auth/signup
-{
-    "name": "Deepak Kumar",
-    "email": "deepak@capg.com",
-    "password": "Deepak@123",
-    "role": "ROLE_APPLICANT"
-}
 ```
+┌─────────────────┐     application.submitted     ┌───────────────────────────┐
+│ Application Svc │ ──────────────────────────────▶│ Admin Svc (Consumer)      │
+└─────────────────┘                                └───────────────────────────┘
 
-**Step 2 — Login:**
-```json
-POST http://localhost:8080/auth/login
-{
-    "email": "deepak@capg.com",
-    "password": "Deepak@123"
-}
-// Response: { "token": "eyJhbGciOi..." }
-```
+┌─────────────────┐     decision.made              ┌───────────────────────────┐
+│ Admin Service   │ ──────────────────────────────▶│ Application Svc (Consumer)│
+└─────────────────┘                                └───────────────────────────┘
 
-**Step 3 — Create Loan Application:**
-```json
-POST http://localhost:8080/applications
-Authorization: Bearer <token>
-{
-    "personalDetails": "Deepak Kumar, Age 28, Mumbai, Maharashtra",
-    "employmentDetails": "Software Engineer at Capgemini, 5 years, Rs.12 LPA",
-    "loanDetails": "Home Loan, Rs. 50,00,000, 20 years tenure, 8.5% interest"
-}
+┌─────────────────┐     document.uploaded           ┌───────────────────────────┐
+│ Document Svc    │ ──────────────────────────────▶│ Application Svc (Consumer)│
+└─────────────────┘                                └───────────────────────────┘
 ```
 
 ---
 
-## 📁 Project Structure
+## 🔍 Distributed Tracing (Zipkin)
+
+Every request is assigned a **Trace ID** that propagates across all services. View traces at `http://localhost:9411`.
+
+**Log format with correlation:**
+```
+2026-03-29 23:00:00 [auth-service] [http-nio-8081-exec-1] [traceId,spanId] INFO AuthService - Login successful
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests for a service
+mvn test -f auth-service/pom.xml
+mvn test -f application-service/pom.xml
+mvn test -f document-service/pom.xml
+mvn test -f admin-service/pom.xml
+```
+
+| Service | Tests | Coverage |
+|---------|-------|----------|
+| Auth Service | 12 (8 service + 4 controller) | Service + Controller layers |
+| Application Service | 13 (8 service + 5 controller) | Service + Controller layers |
+| Document Service | 6 (4 service + 2 controller) | Service + Controller layers |
+| Admin Service | 11 (5 service + 6 controller) | Service + Controller layers |
+
+---
+
+## 📂 Project Structure
 
 ```
 FinFlow-Microservices/
-├── api-gateway/                # Spring Cloud Gateway + JWT Filter
-│   └── src/main/java/com/capg/apigateway/
-│       ├── filter/             # AuthenticationFilter, RouteValidator
-│       └── util/               # JwtUtil
-├── auth-service/               # User Auth + JWT Generation
-│   └── src/main/java/com/capg/authservice/
-│       ├── controller/         # AuthController
-│       ├── dto/                # AuthRequest, AuthResponse, RegisterRequest
-│       ├── entity/             # User
-│       ├── repository/         # UserRepository
-│       ├── service/            # AuthService
-│       ├── config/             # SecurityConfig
-│       └── util/               # JwtUtil
-├── application-service/        # Loan Application Lifecycle
-│   └── src/main/java/com/capg/applicationservice/
-│       ├── controller/         # LoanApplicationController
-│       ├── dto/                # ApplicationRequest
-│       ├── entity/             # LoanApplication
-│       ├── repository/         # LoanApplicationRepository
-│       └── service/            # LoanApplicationService
-├── document-service/           # Document Upload & Verification
-│   └── src/main/java/com/capg/documentservice/
-│       ├── controller/         # DocumentController
-│       ├── entity/             # Document
-│       ├── repository/         # DocumentRepository
-│       └── service/            # DocumentService
-├── admin-service/              # Admin Operations & Decisions
-│   └── src/main/java/com/capg/adminservice/
-│       ├── controller/         # AdminController
-│       ├── config/             # AppConfig (@LoadBalanced RestTemplate)
-│       ├── entity/             # Decision, Report
-│       ├── repository/         # DecisionRepository, ReportRepository
-│       └── service/            # AdminService
-├── eureka-server/              # Netflix Eureka Service Registry
-├── docker-compose.yml          # Full stack orchestration
-└── FinFlow_Postman_Collection.json
+├── eureka-server/          # Service Discovery
+├── api-gateway/            # API Gateway + JWT Validation
+├── auth-service/           # Authentication & User Management
+├── application-service/    # Loan Application Management
+├── document-service/       # Document Upload & Verification
+├── admin-service/          # Admin Panel & Decisions
+├── docker-compose.yml      # Orchestration for all services
+└── README.md               # This file
 ```
 
 ---
 
-## 🗃️ Database Schema
+## 👤 Author
 
-| Database | Service | Tables |
-|----------|---------|--------|
-| `finflow_auth` | Auth Service | `users` |
-| `finflow_app` | Application Service | `loan_applications` |
-| `finflow_doc` | Document Service | `documents` |
-| `finflow_admin` | Admin Service | `decisions`, `reports` |
-
-All databases are auto-created via `createDatabaseIfNotExist=true`. Tables are auto-generated via Hibernate `ddl-auto: update`.
+**Deepak Kumar**
 
 ---
 
-## 🐳 Docker Services
+## 📜 License
 
-```bash
-docker-compose ps    # View running containers
-docker-compose logs  # View all logs
-docker-compose logs auth-service  # View specific service logs
-docker-compose down  # Stop everything
-docker-compose up -d # Start without rebuild
-```
-
----
-
-## 🤝 Design Patterns & Best Practices
-
-- **Clean Architecture**: Controller → Service → Repository layering
-- **DTO Pattern**: Request/Response DTOs for all APIs
-- **Global Exception Handling**: `@RestControllerAdvice` in every service
-- **Stateless Authentication**: JWT tokens — no server-side sessions
-- **Service Discovery**: Netflix Eureka for dynamic routing
-- **Client-Side Load Balancing**: `@LoadBalanced` RestTemplate
-- **Multi-Stage Docker Builds**: Optimized image sizes using Alpine JRE
-- **Health Checks**: MySQL readiness probes prevent race conditions
-
----
-
-## 👨‍💻 Author
-
-**Deepak Kumar** — Capgemini Sprint 1 Project
+This project is built for training purposes at **Capgemini**.

@@ -13,6 +13,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for authentication endpoints.
+ * Base path: /auth
+ *
+ * Endpoints:
+ * - POST /auth/signup       → Register a new user
+ * - POST /auth/login        → Login and receive JWT token
+ * - GET  /auth/admin/users  → List all users (called by Admin Service)
+ * - PUT  /auth/admin/users/{id} → Update a user (called by Admin Service)
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -24,24 +34,28 @@ public class AuthController {
         this.authService = authService;
     }
 
+    /** Register a new user with validated input */
     @PostMapping("/signup")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         log.info("POST /auth/signup — email: {}", request.getEmail());
         return ResponseEntity.ok(authService.register(request));
     }
 
+    /** Authenticate user and return JWT token + role */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         log.info("POST /auth/login — email: {}", request.getEmail());
         return ResponseEntity.ok(authService.login(request));
     }
 
+    /** Admin endpoint: Fetch all registered users */
     @GetMapping("/admin/users")
     public ResponseEntity<List<User>> getAllUsers() {
         log.info("GET /auth/admin/users");
         return ResponseEntity.ok(authService.getAllUsers());
     }
 
+    /** Admin endpoint: Update user details */
     @PutMapping("/admin/users/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody RegisterRequest request) {
         log.info("PUT /auth/admin/users/{}", id);

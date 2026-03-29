@@ -3,7 +3,13 @@ package com.capg.authservice.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * DTO for user registration requests.
+ * Contains validation constraints that are enforced by Spring's @Valid annotation.
+ * Used for both signup and admin user update endpoints.
+ */
 public class RegisterRequest {
+
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -14,10 +20,12 @@ public class RegisterRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
+    /** Defaults to ROLE_APPLICANT if not specified during registration */
     private String role = "ROLE_APPLICANT";
 
     public RegisterRequest() {}
 
+    // --- Getters and Setters ---
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getEmail() { return email; }
