@@ -6,6 +6,8 @@ import com.capg.authservice.dto.RegisterRequest;
 import com.capg.authservice.entity.User;
 import com.capg.authservice.service.AuthService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
@@ -23,21 +26,25 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("POST /auth/signup — email: {}", request.getEmail());
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+        log.info("POST /auth/login — email: {}", request.getEmail());
         return ResponseEntity.ok(authService.login(request));
     }
 
     @GetMapping("/admin/users")
     public ResponseEntity<List<User>> getAllUsers() {
+        log.info("GET /auth/admin/users");
         return ResponseEntity.ok(authService.getAllUsers());
     }
 
     @PutMapping("/admin/users/{id}")
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody RegisterRequest request) {
+        log.info("PUT /auth/admin/users/{}", id);
         return ResponseEntity.ok(authService.updateUser(id, request));
     }
 }

@@ -1,6 +1,8 @@
 package com.capg.apigateway.filter;
 
 import com.capg.apigateway.util.JwtUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -16,6 +18,8 @@ import reactor.core.publisher.Mono;
 @Component
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationFilter.class);
+
     @Autowired
     private RouteValidator validator;
 
@@ -25,10 +29,15 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
+        String method = request.getMethod().name();
+
+        log.info("Incoming request: {} {} ", method, path);
 
         if (validator.isSecured.test(request)) {
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
             if (authHeader == null) {
+                log.warn("Missing Authorization header for secured route: {} {}", method, path);
                 return onError(exchange, HttpStatus.UNAUTHORIZED);
             }
 
@@ -43,6 +52,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                 String userId = String.valueOf(claims.get("userId"));
                 String role = String.valueOf(claims.get("role"));
 
+                log.info("JWT validated — userId: {}, role: {}, routing to: {}", userId, role, path);
+
                 request = exchange.getRequest()
                         .mutate()
                         .header("X-User-Id", userId)
@@ -50,8 +61,11 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                         .build();
 
             } catch (Exception e) {
+                log.error("JWT validation failed for {} {}: {}", method, path, e.getMessage());
                 return onError(exchange, HttpStatus.UNAUTHORIZED);
             }
+        } else {
+            log.debug("Open route — skipping auth: {} {}", method, path);
         }
         return chain.filter(exchange.mutate().request(request).build());
     }
