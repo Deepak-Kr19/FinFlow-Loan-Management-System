@@ -131,10 +131,6 @@ public class LoanApplicationService {
 
     /**
      * Gets the current status of a loan application.
-     *
-     * @param id     the application ID
-     * @param userId the requesting user's ID (ownership check)
-     * @return current status string (Draft, Submitted, APPROVED, REJECTED)
      */
     public String getStatus(Long id, Long userId) {
         log.debug("Getting status for application id={}, userId={}", id, userId);
@@ -145,6 +141,27 @@ public class LoanApplicationService {
             });
         if (!app.getUserId().equals(userId)) throw new RuntimeException("Unauthorized");
         return app.getStatus();
+    }
+
+    /**
+     * Fetches a single application by ID with ownership check.
+     *
+     * @param id     the application ID
+     * @param userId the requesting user's ID (ownership check)
+     * @return the loan application entity
+     */
+    public LoanApplication getApplicationById(Long id, Long userId) {
+        log.info("Fetching application id={} for userId={}", id, userId);
+        LoanApplication app = repository.findById(id)
+            .orElseThrow(() -> {
+                log.warn("Application not found: id={}", id);
+                return new RuntimeException("Application not found");
+            });
+        if (!app.getUserId().equals(userId)) {
+            log.warn("Unauthorized access: userId={} on application owned by userId={}", userId, app.getUserId());
+            throw new RuntimeException("Unauthorized");
+        }
+        return app;
     }
 
     /**

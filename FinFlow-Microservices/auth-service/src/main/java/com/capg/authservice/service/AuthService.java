@@ -90,7 +90,24 @@ public class AuthService {
         // Generate JWT token with user details
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
         log.info("Login successful for: {} (role: {}, userId: {})", user.getEmail(), user.getRole(), user.getId());
-        return new AuthResponse(token, user.getRole());
+        return new AuthResponse(token, user.getRole(), user.getId(), user.getName(), user.getEmail());
+    }
+
+    /**
+     * Fetches the profile of a user by their ID.
+     * Called by the frontend Profile page via the X-User-Id header.
+     *
+     * @param userId the user's ID (from JWT via API Gateway)
+     * @return the User entity
+     * @throws RuntimeException if user not found
+     */
+    public User getProfile(Long userId) {
+        log.info("Fetching profile for userId: {}", userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("Profile fetch failed — user not found: {}", userId);
+                    return new RuntimeException("User not found");
+                });
     }
 
     /**

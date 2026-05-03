@@ -81,6 +81,15 @@ public class LoanApplicationController {
         return ResponseEntity.ok(service.getStatus(id, userId));
     }
 
+    /** Fetch a single application by ID */
+    @GetMapping("/{id}")
+    public ResponseEntity<LoanApplication> getApplicationById(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long userId) {
+        log.info("GET /applications/{} — userId: {}", id, userId);
+        return ResponseEntity.ok(service.getApplicationById(id, userId));
+    }
+
     /** Admin endpoint: fetch all applications across all users */
     @GetMapping("/admin/all")
     public ResponseEntity<List<LoanApplication>> getAllApplications() {

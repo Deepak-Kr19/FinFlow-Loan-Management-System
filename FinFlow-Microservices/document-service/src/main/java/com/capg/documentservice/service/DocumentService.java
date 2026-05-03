@@ -107,4 +107,32 @@ public class DocumentService {
         log.info("Document verified: id={}, status changed from {} to {}", documentId, oldStatus, status);
         return saved;
     }
+
+    /**
+     * Fetches all documents belonging to a specific loan application.
+     *
+     * @param applicationId the loan application ID
+     * @return list of documents for the application
+     */
+    public java.util.List<Document> getByApplicationId(Long applicationId) {
+        log.info("Fetching documents for applicationId: {}", applicationId);
+        return repository.findByApplicationId(applicationId);
+    }
+
+    /**
+     * Fetches a single document by its ID.
+     *
+     * @param id the document ID
+     * @return the Document entity
+     * @throws RuntimeException if not found
+     */
+    public Document getDocumentById(Long id) {
+        log.info("Fetching document by id: {}", id);
+        return repository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Document not found: id={}", id);
+                    return new RuntimeException("Document not found");
+                });
+    }
 }
+

@@ -13,7 +13,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+
 /**
+ * ****************************************
+ * AUTHOR: DEEPAK KUMAR
+ * CLASS: AuthController
+ * 
+ * ****************************************
+ * 
  * REST controller for authentication endpoints.
  * Base path: /auth
  *
@@ -60,5 +68,12 @@ public class AuthController {
     public ResponseEntity<String> updateUser(@PathVariable Long id, @RequestBody RegisterRequest request) {
         log.info("PUT /auth/admin/users/{}", id);
         return ResponseEntity.ok(authService.updateUser(id, request));
+    }
+
+    /** Fetch the current user's profile using X-User-Id header */
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(@RequestHeader("X-User-Id") Long userId) {
+        log.info("GET /auth/profile — userId: {}", userId);
+        return ResponseEntity.ok(authService.getProfile(userId));
     }
 }

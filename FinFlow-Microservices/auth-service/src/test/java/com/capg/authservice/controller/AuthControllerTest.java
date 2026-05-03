@@ -56,7 +56,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /auth/login — should return token")
     void login_Success() throws Exception {
-        AuthResponse response = new AuthResponse("jwt-token-123", "ROLE_APPLICANT");
+        AuthResponse response = new AuthResponse("jwt-token-123", "ROLE_APPLICANT", 1L, "Test User", "test@test.com");
         when(authService.login(any(AuthRequest.class))).thenReturn(response);
 
         AuthRequest request = new AuthRequest();

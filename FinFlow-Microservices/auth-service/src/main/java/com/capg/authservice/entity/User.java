@@ -1,5 +1,6 @@
 package com.capg.authservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 /**
@@ -23,7 +24,8 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    /** BCrypt-hashed password (never stored in plain text) */
+    /** BCrypt-hashed password (never exposed in JSON responses) */
+    @JsonIgnore
     private String password;
 
     /** User role: ROLE_APPLICANT or ROLE_ADMIN */
@@ -38,8 +40,10 @@ public class User {
     public void setName(String name) { this.name = name; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+    @JsonIgnore
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }
+
